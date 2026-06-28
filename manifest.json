@@ -9,7 +9,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/6978/6978255.png",
+      "src": "./logo-esparta.png",
       "sizes": "512x512",
       "type": "image/png"
     }
