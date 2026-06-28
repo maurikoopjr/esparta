@@ -1718,7 +1718,7 @@ async function handleSaveAluno(e) {
       renderMasterStudentList();
       closeModal('modal-aluno');
       showToast(`✅ Aluno ${nome} cadastrado! Senha: ${password}`, 'success', 6000);
-
+    } else {
       // Sem senha — só insere o perfil, aluno cria conta depois via "esqueci minha senha"
       const tempId = generateUUID();
       const userObj = {
