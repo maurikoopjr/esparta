@@ -1,0 +1,17 @@
+{
+  "name": "Esparta Treino Inteligente",
+  "short_name": "Esparta",
+  "description": "Sistema Profissional de Gestão e Treinos de Academia",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#FFD700",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/6978/6978255.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,1207 @@
+/* ============================================================
+   ESPARTA GYM — ESTILOS COMPLETOS v2.0
+   Paleta: Preto profundo + Dourado + superfícies escuras
+   ============================================================ */
+
+/* ---------- VARIÁVEIS GLOBAIS ---------- */
+:root {
+  --primary-yellow: #FFD700;
+  --accent-yellow: #FFE135;
+  --primary-yellow-dim: rgba(255, 215, 0, 0.15);
+  --bg-dark: #0D0D0D;
+  --surface-dark: #161618;
+  --card-dark: #1E1E20;
+  --card-hover: #252528;
+  --border-subtle: rgba(255,255,255,0.06);
+  --text-white: #F5F5F7;
+  --text-grey: #8E8E93;
+  --text-dim: #48484A;
+  --error-red: #FF453A;
+  --success-green: #32D74B;
+  --warning-orange: #FF9F0A;
+  --info-blue: #0A84FF;
+  --font-title: 'Bebas Neue', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.5);
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- RESET ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Evitar que o reset global quebre os ícones do Font Awesome */
+.fa, .fas, .far, .fab, .fa-solid, .fa-regular, .fa-brands, 
+[class^="fa-"], [class*=" fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", sans-serif !important;
+}
+.fa::before, .fas::before, .far::before, .fab::before, .fa-solid::before, .fa-regular::before, .fa-brands::before,
+[class^="fa-"]::before, [class*=" fa-"]::before,
+.fa::after, .fas::after, .far::after, .fab::after, .fa-solid::after, .fa-regular::after, .fa-brands::after,
+[class^="fa-"]::after, [class*=" fa-"]::after {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands" !important;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-white);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ---------- ROTEADOR SPA ---------- */
+section {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+section.active { display: flex; }
+
+/* ============================================================
+   TOAST / SNACKBAR
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  backdrop-filter: blur(12px);
+  animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  pointer-events: all;
+}
+
+.toast.hide { animation: toastOut 0.25s ease forwards; }
+
+.toast-success { background: rgba(50, 215, 75, 0.15); border:1px solid rgba(50,215,75,0.4); color: #32D74B; }
+.toast-error   { background: rgba(255, 69, 58, 0.15); border:1px solid rgba(255,69,58,0.4);  color: #FF453A; }
+.toast-info    { background: rgba(10, 132, 255, 0.15); border:1px solid rgba(10,132,255,0.4); color: #0A84FF; }
+.toast-warning { background: rgba(255,159,10, 0.15);  border:1px solid rgba(255,159,10,0.4); color: #FF9F0A; }
+
+.toast i { font-size: 16px; flex-shrink: 0; }
+
+@keyframes toastIn {
+  from { opacity:0; transform:translateY(-12px) scale(0.95); }
+  to   { opacity:1; transform:translateY(0)    scale(1);    }
+}
+@keyframes toastOut {
+  from { opacity:1; transform:translateY(0); }
+  to   { opacity:0; transform:translateY(-8px); }
+}
+
+/* ============================================================
+   BANNER OFFLINE
+   ============================================================ */
+.conn-banner {
+  display: none;
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,159,10,0.15);
+  border: 1px solid rgba(255,159,10,0.35);
+  color: var(--warning-orange);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 8px;
+  align-items: center;
+  z-index: 200;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+}
+.conn-banner.active { display: flex; }
+
+/* ============================================================
+   TELA DE LOGIN
+   ============================================================ */
+.login-bg-glow {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(255,215,0,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 20px 40px;
+  min-height: 100vh;
+  text-align: center;
+  position: relative; z-index: 1;
+}
+
+.login-header { margin-bottom: 40px; }
+
+.login-header { margin-bottom: 40px; }
+
+/* Logo padrão Esparta */
+.login-logo-default {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.login-logo-default img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  /* Remove o fundo branco na tela escura */
+  mix-blend-mode: multiply;
+  filter: brightness(1.05) contrast(1.1);
+  animation: logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%, 100% { filter: brightness(1.05) contrast(1.1) drop-shadow(0 0 12px rgba(255,215,0,0.2)); }
+  50%       { filter: brightness(1.1)  contrast(1.1) drop-shadow(0 0 28px rgba(255,215,0,0.5)); }
+}
+
+/* Logo customizada da academia */
+.login-logo-custom {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--primary-yellow);
+  box-shadow: 0 0 24px rgba(255,215,0,0.35);
+}
+.login-logo-custom img { width: 100%; height: 100%; object-fit: cover; }
+
+.login-card {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: var(--shadow-card);
+}
+
+/* Mini logo da academia no header */
+.header-gym-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.header-gym-logo {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,215,0,0.4);
+  background: var(--card-dark);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-family: var(--font-title);
+  font-size: 16px;
+  color: var(--primary-yellow);
+}
+.header-gym-logo img { width: 100%; height: 100%; object-fit: cover; }
+
+
+/* ============================================================
+   HEADER DAS TELAS
+   ============================================================ */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  height: 60px;
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.app-header-title { text-align: center; flex: 1; }
+
+.app-header-title h2 {
+  font-family: var(--font-title);
+  font-size: 18px;
+  letter-spacing: 2px;
+  color: var(--primary-yellow);
+  line-height: 1.1;
+}
+
+.app-header-title p {
+  font-size: 10px;
+  color: var(--text-grey);
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.app-header-action {
+  width: 40px; height: 40px;
+  background: transparent;
+  border: none;
+  color: var(--text-grey);
+  font-size: 18px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.app-header-action:hover { background: var(--card-dark); color: var(--text-white); }
+.app-header-action.logout-btn:hover { color: var(--error-red); }
+
+/* ============================================================
+   FORMULÁRIOS
+   ============================================================ */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+.form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-grey);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition);
+}
+.input-wrapper:focus-within { border-color: var(--primary-yellow); }
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-grey);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.input-wrapper input,
+.input-wrapper select,
+.input-wrapper textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-white);
+  font-size: 15px;
+  padding: 13px 16px;
+}
+
+.input-wrapper input { padding-left: 42px; }
+.input-wrapper select { padding-left: 16px; cursor: pointer; }
+.input-wrapper textarea { padding: 12px 16px; resize: vertical; min-height: 72px; line-height: 1.5; }
+
+.input-wrapper input::placeholder,
+.input-wrapper textarea::placeholder { color: var(--text-dim); }
+
+.input-wrapper select option { background: var(--card-dark); }
+
+/* Toggle senha */
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-grey);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 14px;
+  transition: color var(--transition);
+}
+.toggle-password:hover { color: var(--text-white); }
+
+/* ============================================================
+   BOTÕES
+   ============================================================ */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--primary-yellow);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-title);
+  font-size: 18px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0);
+  transition: background var(--transition);
+}
+.btn:hover::after { background: rgba(0,0,0,0.1); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  background: var(--primary-yellow);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px;
+  background: var(--card-dark);
+  color: var(--text-grey);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-title);
+  font-size: 15px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.btn-secondary:hover { background: var(--card-hover); color: var(--text-white); }
+
+.btn-icon {
+  width: 36px; height: 36px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-grey);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.btn-icon:hover { background: var(--card-hover); color: var(--text-white); }
+.btn-icon.danger:hover { color: var(--error-red); border-color: rgba(255,69,58,0.4); }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 80px; right: 20px;
+  width: 56px; height: 56px;
+  background: var(--primary-yellow);
+  color: #000;
+  border: none;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(255,215,0,0.35);
+  transition: var(--transition);
+  z-index: 50;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(255,215,0,0.5); }
+
+/* ============================================================
+   BARRA DE NAVEGAÇÃO INFERIOR
+   ============================================================ */
+.bottom-nav {
+  display: flex;
+  background: var(--surface-dark);
+  border-top: 1px solid var(--border-subtle);
+  padding: 0 0 env(safe-area-inset-bottom, 0);
+  flex-shrink: 0;
+  position: sticky; bottom: 0; z-index: 100;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 0;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: color var(--transition);
+  position: relative;
+}
+.nav-item i { font-size: 20px; }
+.nav-item.active { color: var(--primary-yellow); }
+.nav-item.active::before {
+  content: '';
+  position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 40px; height: 2px;
+  background: var(--primary-yellow);
+  border-radius: 0 0 2px 2px;
+}
+
+/* ============================================================
+   BARRA DE BUSCA
+   ============================================================ */
+.search-bar-container {
+  padding: 12px 16px;
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+.search-icon-container {
+  display: flex;
+  align-items: center;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 0 14px;
+  gap: 10px;
+  transition: border-color var(--transition);
+}
+.search-icon-container:focus-within { border-color: var(--primary-yellow); }
+.search-icon-container i { color: var(--text-grey); font-size: 14px; flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-white);
+  font-size: 14px;
+  padding: 11px 0;
+}
+.search-input::placeholder { color: var(--text-dim); }
+
+/* ============================================================
+   TELA DO ALUNO — BOAS VINDAS E SELETOR DE DIAS
+   ============================================================ */
+.user-welcome {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 16px 12px;
+}
+
+.avatar {
+  width: 48px; height: 48px;
+  background: var(--primary-yellow-dim);
+  border: 1.5px solid var(--primary-yellow);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title);
+  font-size: 22px;
+  color: var(--primary-yellow);
+  flex-shrink: 0;
+}
+
+.welcome-text h3 { font-size: 18px; font-weight: 700; }
+.welcome-text p { font-size: 13px; color: var(--text-grey); margin-top: 1px; }
+
+.day-selector {
+  display: flex;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.day-selector::-webkit-scrollbar { display: none; }
+
+.day-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-subtle);
+  background: var(--card-dark);
+  color: var(--text-grey);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+.day-btn.has-workout::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--primary-yellow);
+  border-radius: 50%;
+  transition: var(--transition);
+}
+.day-btn.active.has-workout::after {
+  background: #000;
+}
+.day-btn.active {
+  background: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: #000;
+  box-shadow: 0 0 12px rgba(255,215,0,0.3);
+}
+
+/* Progresso */
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-grey); margin-bottom: 6px; font-weight: 600;
+}
+.progress-track {
+  height: 4px; background: var(--card-dark); border-radius: 2px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--primary-yellow); border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ============================================================
+   CARD DE EXERCÍCIO (ALUNO)
+   ============================================================ */
+.workout-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exercise-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  transition: var(--transition);
+}
+.exercise-card.done {
+  border-color: rgba(50,215,75,0.3);
+  background: rgba(50,215,75,0.05);
+}
+.exercise-card.done .exercise-info h4 { text-decoration: line-through; color: var(--text-grey); }
+
+.exercise-order {
+  width: 34px; height: 34px;
+  background: var(--primary-yellow-dim);
+  border: 1px solid rgba(255,215,0,0.25);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title);
+  font-size: 17px;
+  color: var(--primary-yellow);
+  flex-shrink: 0;
+}
+.exercise-card.done .exercise-order {
+  background: rgba(50,215,75,0.15);
+  border-color: rgba(50,215,75,0.3);
+  color: var(--success-green);
+}
+
+.exercise-info { flex: 1; min-width: 0; }
+.exercise-info h4 { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exercise-info p { font-size: 12px; color: var(--text-grey); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.exercise-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.chip {
+  background: rgba(255,215,0,0.08);
+  border: 1px solid rgba(255,215,0,0.2);
+  color: var(--primary-yellow);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  display: flex; align-items: center; gap: 4px;
+}
+.chip.green { background: rgba(50,215,75,0.08); border-color: rgba(50,215,75,0.2); color: var(--success-green); }
+
+.exercise-card-actions {
+  display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
+}
+
+.video-btn {
+  width: 38px; height: 38px;
+  background: rgba(255,0,0,0.12);
+  border: 1px solid rgba(255,0,0,0.25);
+  border-radius: var(--radius-sm);
+  color: #ff453a;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.video-btn:hover { background: rgba(255,0,0,0.22); }
+
+.check-btn {
+  width: 38px; height: 38px;
+  background: var(--card-dark);
+  border: 1.5px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.check-btn.checked {
+  background: rgba(50,215,75,0.15);
+  border-color: rgba(50,215,75,0.4);
+  color: var(--success-green);
+}
+
+/* Treino vazio */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 24px;
+  text-align: center; gap: 12px;
+}
+.empty-state i { font-size: 52px; color: var(--text-dim); }
+.empty-state h4 { font-size: 16px; font-weight: 700; color: var(--text-grey); }
+.empty-state p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+/* ============================================================
+   AVALIAÇÃO FÍSICA
+   ============================================================ */
+.assessments-container { padding: 12px 16px 80px; display: flex; flex-direction: column; gap: 12px; }
+
+.assessment-card {
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.assessment-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; cursor: pointer;
+  transition: background var(--transition);
+}
+.assessment-header:hover { background: var(--card-hover); }
+.assessment-header h4 { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.assessment-header h4 i { color: var(--primary-yellow); }
+.assessment-header > i { color: var(--text-grey); font-size: 12px; transition: transform var(--transition); }
+
+.assessment-details {
+  display: none; padding: 0 16px 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+.assessment-details.active { display: block; }
+.assessment-details.active + .assessment-header > i,
+.assessment-header i.fa-chevron-up { transform: rotate(180deg); }
+
+.measures-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding-top: 14px;
+}
+.measure-tile {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.measure-tile span { font-size: 10px; color: var(--text-grey); letter-spacing: 1px; font-weight: 700; }
+.measure-tile strong { font-size: 17px; font-weight: 700; color: var(--primary-yellow); }
+
+.obs-box {
+  margin-top: 12px; padding: 12px;
+  background: var(--surface-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+}
+.obs-box h5 { font-size: 11px; color: var(--text-grey); letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+.obs-box p { font-size: 13px; line-height: 1.6; color: var(--text-white); }
+
+/* ============================================================
+   CARDS DE USUÁRIO (INSTRUTORES / LISTAS)
+   ============================================================ */
+.user-list { flex: 1; overflow-y: auto; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+.user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.user-card:hover { background: var(--card-hover); border-color: rgba(255,215,0,0.2); }
+.user-card-left { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+.user-card-info { min-width: 0; }
+.user-card-info h4 { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-card-info p { font-size: 12px; color: var(--text-grey); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-card-info small { font-size: 11px; color: var(--text-dim); }
+
+.user-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.user-badge.master { background: rgba(255,215,0,0.15); color: var(--primary-yellow); border: 1px solid rgba(255,215,0,0.3); }
+.user-badge.instrutor { background: rgba(10,132,255,0.15); color: var(--info-blue); border: 1px solid rgba(10,132,255,0.3); }
+.user-badge.aluno { background: rgba(50,215,75,0.12); color: var(--success-green); border: 1px solid rgba(50,215,75,0.3); }
+
+/* ============================================================
+   CONFIGURAÇÕES DA ACADEMIA
+   ============================================================ */
+.gym-settings {
+  flex: 1; overflow-y: auto;
+  padding: 20px 16px 80px;
+  display: flex; flex-direction: column; gap: 20px; align-items: center;
+}
+
+.gym-logo-preview {
+  width: 120px; height: 120px;
+  background: var(--card-dark);
+  border: 2px dashed rgba(255,215,0,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  color: var(--text-dim);
+  font-size: 40px;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.gym-logo-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.gym-form { width: 100%; max-width: 420px; }
+
+/* Upload Zone */
+.upload-zone {
+  background: var(--card-dark);
+  border: 1.5px dashed rgba(255,215,0,0.25);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  transition: var(--transition);
+}
+.upload-zone:hover { border-color: var(--primary-yellow); background: var(--primary-yellow-dim); }
+.upload-zone i { font-size: 28px; color: var(--primary-yellow); }
+.upload-zone span { font-size: 14px; font-weight: 600; }
+.upload-zone small { font-size: 11px; color: var(--text-grey); }
+
+.upload-progress-bar {
+  height: 4px; background: var(--card-dark); border-radius: 2px; overflow: hidden;
+}
+.upload-progress-fill {
+  height: 100%; background: var(--primary-yellow); border-radius: 2px;
+  transition: width 0.2s ease; width: 0%;
+}
+
+/* ============================================================
+   TELA: FICHA DO ALUNO
+   ============================================================ */
+.ficha-tabs {
+  display: flex;
+  background: var(--surface-dark);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.ficha-tab {
+  flex: 1;
+  padding: 13px 0;
+  background: none; border: none;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.ficha-tab.active {
+  color: var(--primary-yellow);
+  border-bottom-color: var(--primary-yellow);
+}
+
+/* Cards de treino na ficha */
+.ficha-workout-card {
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.ficha-workout-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+}
+.ficha-workout-card-header h4 {
+  flex: 1; font-size: 15px; font-weight: 700;
+}
+.ficha-workout-card-header .day-chips {
+  display: flex; flex-wrap: wrap; gap: 4px;
+}
+.day-chip {
+  font-size: 9px; font-weight: 800; letter-spacing: 1px;
+  padding: 3px 7px; border-radius: 20px;
+  background: var(--primary-yellow-dim);
+  border: 1px solid rgba(255,215,0,0.25);
+  color: var(--primary-yellow);
+}
+.ficha-workout-exercises {
+  border-top: 1px solid var(--border-subtle);
+  padding: 10px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ficha-exercise-row {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px;
+}
+.ficha-exercise-row .ex-num {
+  width: 22px; height: 22px;
+  background: var(--primary-yellow-dim);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: var(--primary-yellow);
+  flex-shrink: 0;
+}
+.ficha-exercise-row .ex-name { flex: 1; font-weight: 600; }
+.ficha-exercise-row .ex-params { color: var(--text-grey); font-size: 12px; }
+
+/* ============================================================
+   MODAL: PLAYER DE VÍDEO
+   ============================================================ */
+.video-modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(8px);
+  z-index: 800;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.video-modal-backdrop.active { display: flex; }
+
+.video-modal-content {
+  width: 100%; max-width: 640px;
+  display: flex; flex-direction: column; gap: 16px;
+  position: relative;
+}
+
+.video-modal-close {
+  position: absolute; top: -12px; right: -4px;
+  width: 36px; height: 36px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  color: var(--text-white);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+  transition: var(--transition);
+}
+.video-modal-close:hover { background: var(--error-red); border-color: var(--error-red); }
+
+.video-player-container {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.video-player-container iframe,
+.video-player-container video {
+  width: 100%; height: 100%; border: none;
+}
+.video-no-url {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  color: var(--text-grey);
+}
+.video-no-url i { font-size: 48px; }
+.video-no-url p { font-size: 14px; }
+
+.video-modal-info { padding: 4px 4px; }
+.video-modal-info h3 { font-size: 18px; font-weight: 700; }
+.video-modal-info p { font-size: 13px; color: var(--text-grey); margin-top: 4px; line-height: 1.5; }
+
+/* ============================================================
+   MODAIS GENÉRICOS
+   ============================================================ */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 500;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.modal-backdrop.active { display: flex; }
+
+.modal-content {
+  background: var(--surface-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-content-tall { max-height: 92vh; }
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky; top: 0; background: var(--surface-dark); z-index: 1;
+}
+.modal-header h3 {
+  font-family: var(--font-title);
+  font-size: 20px;
+  letter-spacing: 1px;
+  color: var(--primary-yellow);
+}
+.modal-header button {
+  background: var(--card-dark); border: 1px solid var(--border-subtle);
+  width: 32px; height: 32px; border-radius: var(--radius-sm);
+  color: var(--text-grey); font-size: 16px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+}
+.modal-header button:hover { color: var(--text-white); background: var(--card-hover); }
+
+.modal-body { padding: 16px 20px; }
+
+.modal-footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ============================================================
+   MONTADOR DE TREINO — SELETOR DE EXERCÍCIO
+   ============================================================ */
+.day-toggle-group {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+}
+
+.day-toggle {
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border-subtle);
+  background: var(--card-dark);
+  color: var(--text-grey);
+  font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.day-toggle.active {
+  background: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: #000;
+}
+
+.exercise-picker { }
+
+.picker-results {
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  display: none;
+}
+.picker-results.open { display: block; }
+
+.picker-item {
+  padding: 10px 14px;
+  font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition);
+}
+.picker-item:last-child { border-bottom: none; }
+.picker-item:hover { background: var(--card-dark); }
+.picker-item .picker-group {
+  font-size: 10px; color: var(--text-grey);
+  background: var(--card-dark);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* Linha de exercício no editor de treino */
+.workout-ex-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.workout-ex-row .ex-name-label {
+  flex: 1; font-size: 13px; font-weight: 700; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.workout-ex-input {
+  width: 46px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  color: var(--text-white);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  padding: 5px 4px;
+  outline: none;
+}
+.workout-ex-input:focus { border-color: var(--primary-yellow); }
+.workout-ex-input.wide { width: 68px; }
+
+.workout-ex-label {
+  font-size: 10px; color: var(--text-grey); letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   BIBLIOTECA DE EXERCÍCIOS — CARD
+   ============================================================ */
+.exercise-lib-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 12px;
+  transition: var(--transition);
+}
+.exercise-lib-card:hover { background: var(--card-hover); }
+.exercise-lib-icon {
+  width: 42px; height: 42px;
+  background: var(--primary-yellow-dim);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary-yellow);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.exercise-lib-info { flex: 1; min-width: 0; }
+.exercise-lib-info h4 { font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exercise-lib-info p { font-size: 11px; color: var(--text-grey); margin-top: 1px; }
+.exercise-lib-badge {
+  font-size: 10px; font-weight: 800;
+  padding: 3px 8px; border-radius: 20px;
+  background: rgba(255,215,0,0.1);
+  color: var(--primary-yellow);
+  border: 1px solid rgba(255,215,0,0.2);
+  white-space: nowrap; flex-shrink: 0;
+}
+
+/* ============================================================
+   SEÇÃO DE FICHA — ANIMAÇÃO DE ENTRADA
+   ============================================================ */
+#ficha-aluno-view {
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: fixed; inset: 0;
+  z-index: 400;
+  background: var(--bg-dark);
+}
+#ficha-aluno-view.active {
+  transform: translateX(0);
+  display: flex;
+}
+
+/* ============================================================
+   SCROLLBAR CUSTOMIZADA
+   ============================================================ */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--card-hover); border-radius: 2px; }
+
+/* ============================================================
+   UTILITÁRIOS
+   ============================================================ */
+.text-yellow { color: var(--primary-yellow); }
+.text-grey   { color: var(--text-grey); }
+.text-success { color: var(--success-green); }
+.text-error  { color: var(--error-red); }
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--card-dark) 25%, var(--card-hover) 50%, var(--card-dark) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+  height: 64px;
+}
+@keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }

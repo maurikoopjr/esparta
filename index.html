@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Esparta — Sistema de Treino Inteligente</title>
+  <meta name="description" content="Sistema profissional de gestão de academia com treinos personalizados e acompanhamento de alunos.">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#101010">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.2/css/all.min.css">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SupabaseLib = window.supabase;
+    try { delete window.supabase; } catch(e) { window.supabase = undefined; }
+  </script>
+</head>
+<body>
+
+  <!-- ===== TOAST CONTAINER ===== -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ===== BANNER OFFLINE ===== -->
+  <div id="conn-banner" class="conn-banner">
+    <i class="fa-solid fa-wifi-slash"></i>
+    <span>Você está offline. Dados serão sincronizados quando a conexão voltar.</span>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- TELA: LOGIN                               -->
+  <!-- ========================================= -->
+  <section id="login-view" class="active">
+    <div class="login-bg-glow"></div>
+    <div class="login-container">
+      <div class="login-header">
+        <!-- Logo customizada da academia (carregada do banco) -->
+        <div id="login-logo-container" class="login-logo-custom" style="display:none;"></div>
+        <!-- Logo padrão Esparta (quando nenhuma academia customizou) -->
+        <div id="login-default-logo" class="login-logo-default">
+          <img src="logo-esparta.png" alt="Esparta Gym" id="login-default-logo-img">
+        </div>
+        <p id="login-subtitle">SISTEMA DE TREINO INTELIGENTE</p>
+      </div>
+      <div class="login-card">
+        <form id="login-form" autocomplete="off">
+          <div class="form-group">
+            <label for="login-email">E-mail</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="login-email" required placeholder="seu@email.com" autocomplete="email">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Senha</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="login-password" required placeholder="••••••••" autocomplete="current-password">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('login-password', this)" tabindex="-1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn" id="login-btn">
+            <i class="fa-solid fa-shield-halved"></i> ENTRAR NO COMBATE
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- TELA: ALUNO                               -->
+  <!-- ========================================= -->
+  <section id="aluno-view">
+    <header class="app-header">
+      <button class="app-header-action" id="aluno-sync-btn" title="Sincronizar dados">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <div class="app-header-title">
+        <div class="header-gym-brand" id="aluno-gym-brand">
+          <div class="header-gym-logo" id="aluno-gym-logo"><span id="aluno-gym-inicial">E</span></div>
+          <h2 id="aluno-gym-name">ESPARTA GYM</h2>
+        </div>
+        <p>ÁREA DO ALUNO</p>
+      </div>
+      <button class="app-header-action logout-btn" onclick="logout()" title="Sair">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </header>
+
+    <!-- Subtela: Treino -->
+    <div id="aluno-treino-subview" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+      <div class="user-welcome">
+        <div class="avatar" id="aluno-avatar">G</div>
+        <div class="welcome-text">
+          <h3 id="aluno-welcome-title">Olá, Guerreiro</h3>
+          <p id="aluno-welcome-sub">Treino pesado cura tudo!</p>
+        </div>
+      </div>
+
+      <!-- Seletor de Dias -->
+      <div class="day-selector" id="aluno-day-selector">
+        <button class="day-btn" data-dia="segunda">SEG</button>
+        <button class="day-btn" data-dia="terça">TER</button>
+        <button class="day-btn" data-dia="quarta">QUA</button>
+        <button class="day-btn" data-dia="quinta">QUI</button>
+        <button class="day-btn" data-dia="sexta">SEX</button>
+        <button class="day-btn" data-dia="sábado">SÁB</button>
+        <button class="day-btn" data-dia="domingo">DOM</button>
+      </div>
+
+      <!-- Progresso do treino -->
+      <div id="aluno-progress-bar-container" style="display:none; padding:0 16px 12px;">
+        <div class="progress-label">
+          <span id="aluno-progress-text">0 de 0 exercícios</span>
+          <span id="aluno-progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="aluno-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Lista de exercícios -->
+      <div class="workout-list" id="aluno-workout-list"></div>
+    </div>
+
+    <!-- Subtela: Avaliação -->
+    <div id="aluno-avaliacao-subview" style="flex:1; display:none; overflow-y:auto;">
+      <div class="assessments-container" id="aluno-assessments-list"></div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" id="btn-tab-treino">
+        <i class="fa-solid fa-dumbbell"></i>
+        <span>Treino</span>
+      </button>
+      <button class="nav-item" id="btn-tab-avaliacao">
+        <i class="fa-solid fa-chart-line"></i>
+        <span>Avaliação</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- TELA: INSTRUTOR                           -->
+  <!-- ========================================= -->
+  <section id="instrutor-view">
+    <header class="app-header">
+      <button class="app-header-action" id="instrutor-sync-btn">
+        <i class="fa-solid fa-rotate"></i>
+      </button>
+      <div class="app-header-title">
+        <h2>PAINEL DO INSTRUTOR</h2>
+        <div class="header-gym-brand" id="instrutor-gym-brand" style="margin-top: 4px;">
+          <div class="header-gym-logo" id="instrutor-gym-logo"><span id="instrutor-gym-inicial">E</span></div>
+          <p id="instrutor-gym-name" style="font-size: 14px; font-weight: 600; color: var(--text-grey); letter-spacing: 0.5px;">ESPARTA GYM</p>
+        </div>
+      </div>
+      <button class="app-header-action logout-btn" onclick="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </header>
+
+    <div class="search-bar-container">
+      <div class="search-icon-container">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="student-search" class="search-input" placeholder="Buscar aluno por nome...">
+      </div>
+    </div>
+
+    <div class="user-list" id="student-list-container"></div>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- TELA: MASTER (ADMINISTRADOR)              -->
+  <!-- ========================================= -->
+  <section id="master-view">
+
+    <!-- Sub: Alunos -->
+    <div id="master-alunos-subview" style="flex:1; display:flex; flex-direction:column;">
+      <header class="app-header">
+        <button class="app-header-action" id="master-sync-btn">
+          <i class="fa-solid fa-rotate"></i>
+        </button>
+        <div class="app-header-title">
+          <h2>ADMINISTRAÇÃO</h2>
+          <div class="header-gym-brand" id="master-gym-brand" style="margin-top: 4px;">
+            <div class="header-gym-logo" id="master-gym-logo"><span id="master-gym-inicial">E</span></div>
+            <p id="master-gym-name-display" style="font-size: 14px; font-weight: 600; color: var(--text-grey); letter-spacing: 0.5px;">ESPARTA GYM</p>
+          </div>
+        </div>
+        <button class="app-header-action logout-btn" onclick="logout()">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </header>
+      <div class="search-bar-container">
+        <div class="search-icon-container">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="master-student-search" class="search-input" placeholder="Buscar aluno...">
+        </div>
+      </div>
+      <div class="user-list" id="master-student-list-container" style="flex:1; overflow-y:auto;"></div>
+      <button class="fab" id="add-student-fab" title="Cadastrar novo aluno">
+        <i class="fa-solid fa-user-plus"></i>
+      </button>
+    </div>
+
+    <!-- Sub: Biblioteca de Exercícios -->
+    <div id="master-exercicios-subview" style="flex:1; display:none; flex-direction:column;">
+      <header class="app-header">
+        <div class="app-header-title">
+          <h2>BIBLIOTECA DE EXERCÍCIOS</h2>
+          <p>GERENCIAR EXERCÍCIOS</p>
+        </div>
+      </header>
+      <div class="search-bar-container">
+        <div class="search-icon-container">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="exercise-search" class="search-input" placeholder="Buscar exercício...">
+        </div>
+      </div>
+      <div class="user-list" id="master-exercise-list" style="flex:1; overflow-y:auto;"></div>
+      <button class="fab" id="add-exercise-fab" title="Novo exercício">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- Sub: Gerenciar Usuários (Instrutores) -->
+    <div id="master-usuarios-subview" style="flex:1; display:none; flex-direction:column;">
+      <header class="app-header">
+        <div class="app-header-title">
+          <h2>GERENCIAR EQUIPE</h2>
+          <p>INSTRUTORES E COLABORADORES</p>
+        </div>
+      </header>
+      <div class="search-bar-container">
+        <div class="search-icon-container">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="users-search" class="search-input" placeholder="Buscar usuários...">
+        </div>
+      </div>
+      <div class="user-list" id="master-users-list" style="flex:1; overflow-y:auto;"></div>
+      <button class="fab" id="add-user-fab" title="Cadastrar instrutor">
+        <i class="fa-solid fa-user-tie"></i>
+      </button>
+    </div>
+
+    <!-- Sub: Configurações da Academia -->
+    <div id="master-config-subview" style="flex:1; display:none; flex-direction:column;">
+      <header class="app-header">
+        <div class="app-header-title">
+          <h2>DADOS DA ACADEMIA</h2>
+          <p>NOME E LOGOTIPO</p>
+        </div>
+      </header>
+      <div class="gym-settings">
+        <div class="gym-logo-preview" id="gym-logo-preview-box">
+          <i class="fa-solid fa-dumbbell"></i>
+        </div>
+        <form id="gym-settings-form" class="gym-form">
+          <div class="form-group">
+            <label for="gym-name-input">Nome da Academia</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-signature input-icon"></i>
+              <input type="text" id="gym-name-input" required placeholder="Ex: Academia Esparta">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Logotipo da Academia</label>
+            <div class="upload-zone" id="logo-upload-zone" onclick="document.getElementById('gym-logo-file').click()">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span id="logo-upload-label">Clique para selecionar uma imagem</span>
+              <small>PNG, JPG ou WEBP — Recomendado: 512×512px</small>
+            </div>
+            <input type="file" id="gym-logo-file" accept="image/*" style="display:none;">
+          </div>
+          <div id="logo-upload-progress" style="display:none;">
+            <div class="upload-progress-bar">
+              <div class="upload-progress-fill" id="logo-progress-fill"></div>
+            </div>
+            <p id="logo-progress-text" style="font-size:12px; color:var(--text-grey); margin-top:4px;">Enviando...</p>
+          </div>
+          <button type="submit" class="btn" id="save-settings-btn">
+            <i class="fa-solid fa-floppy-disk"></i> SALVAR CONFIGURAÇÕES
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <nav class="bottom-nav">
+      <button class="nav-item active" id="btn-master-alunos">
+        <i class="fa-solid fa-users"></i>
+        <span>Alunos</span>
+      </button>
+      <button class="nav-item" id="btn-master-exercicios">
+        <i class="fa-solid fa-dumbbell"></i>
+        <span>Exercícios</span>
+      </button>
+      <button class="nav-item" id="btn-master-usuarios">
+        <i class="fa-solid fa-user-shield"></i>
+        <span>Equipe</span>
+      </button>
+      <button class="nav-item" id="btn-master-config">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Academia</span>
+      </button>
+    </nav>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- TELA: FICHA DO ALUNO (deslizante)         -->
+  <!-- ========================================= -->
+  <section id="ficha-aluno-view">
+    <header class="app-header">
+      <button class="app-header-action" onclick="closeFichaAluno()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div class="app-header-title">
+        <h2 id="ficha-aluno-nome">NOME DO ALUNO</h2>
+        <p id="ficha-aluno-email">email@academia.com</p>
+      </div>
+      <button class="app-header-action" onclick="openEditStudentModal()" title="Editar dados do aluno">
+        <i class="fa-solid fa-user-gear"></i>
+      </button>
+    </header>
+
+    <!-- Tabs Ficha -->
+    <div class="ficha-tabs">
+      <button class="ficha-tab active" id="btn-ficha-treino">
+        <i class="fa-solid fa-dumbbell"></i> Treinos
+      </button>
+      <button class="ficha-tab" id="btn-ficha-avaliacao">
+        <i class="fa-solid fa-chart-line"></i> Avaliações
+      </button>
+    </div>
+
+    <!-- Sub: Treinos do Aluno -->
+    <div id="ficha-treino-subview" style="flex:1; overflow-y:auto; padding-bottom:24px;">
+      <div id="ficha-workout-list" style="padding:12px 16px; display:flex; flex-direction:column; gap:12px;"></div>
+      <div style="padding:0 16px;">
+        <button class="btn" id="btn-add-workout-ficha" style="gap:8px;">
+          <i class="fa-solid fa-plus"></i> NOVO TREINO PARA ESTE ALUNO
+        </button>
+      </div>
+    </div>
+
+    <!-- Sub: Avaliações do Aluno -->
+    <div id="ficha-avaliacao-subview" style="flex:1; display:none; overflow-y:auto; padding-bottom:24px;">
+      <div id="ficha-assessment-list" style="padding:12px 16px; display:flex; flex-direction:column; gap:12px;"></div>
+      <div style="padding:0 16px;">
+        <button class="btn" id="btn-add-assessment-ficha" style="gap:8px;">
+          <i class="fa-solid fa-plus"></i> NOVA AVALIAÇÃO FÍSICA
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- MODAL: PLAYER DE VÍDEO                   -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop video-modal-backdrop" id="modal-video">
+    <div class="video-modal-content">
+      <button class="video-modal-close" onclick="closeVideoModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="video-player-container" id="video-player-container">
+        <!-- Preenchido dinamicamente -->
+      </div>
+      <div class="video-modal-info">
+        <h3 id="video-modal-title">Exercício</h3>
+        <p id="video-modal-desc"></p>
+        <div id="video-modal-external-link-container" style="margin-top: 12px; display: none;">
+          <a href="#" id="video-modal-external-link" target="_blank" class="btn" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; font-size: 13px; padding: 8px 16px; width: auto; background: var(--primary-yellow); color: var(--bg-dark); font-weight: 700; border-radius: var(--radius-sm); transition: var(--transition);">
+            <i class="fa-brands fa-youtube"></i> Abrir vídeo original
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: AVALIAÇÃO FÍSICA                  -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-assessment">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="assessment-modal-title">Nova Avaliação</h3>
+        <button onclick="closeModal('modal-assessment')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="assessment-form">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label for="ass-peso">Peso (kg)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-peso" required placeholder="80.0"></div>
+            </div>
+            <div class="form-group">
+              <label for="ass-altura">Altura (m)</label>
+              <div class="input-wrapper"><input type="number" step="0.01" id="ass-altura" required placeholder="1.80"></div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label for="ass-gordura">% Gordura</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-gordura" placeholder="15"></div>
+            </div>
+            <div class="form-group">
+              <label for="ass-peito">Tórax (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-peito" placeholder="100"></div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label for="ass-b-esq">Braço Esq (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-b-esq" placeholder="35"></div>
+            </div>
+            <div class="form-group">
+              <label for="ass-b-dir">Braço Dir (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-b-dir" placeholder="35"></div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label for="ass-cintura">Cintura (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-cintura" placeholder="80"></div>
+            </div>
+            <div class="form-group">
+              <label for="ass-quadril">Quadril (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-quadril" placeholder="95"></div>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div class="form-group">
+              <label for="ass-c-esq">Coxa Esq (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-c-esq" placeholder="55"></div>
+            </div>
+            <div class="form-group">
+              <label for="ass-c-dir">Coxa Dir (cm)</label>
+              <div class="input-wrapper"><input type="number" step="0.1" id="ass-c-dir" placeholder="55"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ass-obs">Observações do Instrutor</label>
+            <div class="input-wrapper">
+              <textarea id="ass-obs" rows="3" placeholder="Foco na hipertrofia, sem dor no joelho..."></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeModal('modal-assessment')">CANCELAR</button>
+            <button type="submit" class="btn-primary">SALVAR AVALIAÇÃO</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: MONTADOR DE TREINO                -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-workout">
+    <div class="modal-content modal-content-tall">
+      <div class="modal-header">
+        <h3 id="workout-modal-title">Treino do Aluno</h3>
+        <button onclick="closeModal('modal-workout')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="workout-form">
+          <!-- Nome do Treino -->
+          <div class="form-group">
+            <label for="workout-nome">Nome do Treino</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-tag input-icon"></i>
+              <input type="text" id="workout-nome" placeholder="Ex: Treino A — Peito e Tríceps" maxlength="60">
+            </div>
+          </div>
+
+          <!-- Dias da Semana -->
+          <div class="form-group">
+            <label>Dias da Semana</label>
+            <div class="day-toggle-group" id="workout-days-checkboxes"></div>
+          </div>
+
+          <!-- Seletor de Exercício -->
+          <div style="border-top:1px solid rgba(255,255,255,0.05); padding-top:14px; margin-top:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <h4 style="font-size:13px; font-weight:700; color:var(--primary-yellow); letter-spacing:1px;">EXERCÍCIOS DO TREINO</h4>
+            </div>
+
+            <!-- Buscador de exercício -->
+            <div class="exercise-picker">
+              <div class="search-icon-container" style="margin-bottom:8px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="exercise-picker-search" class="search-input" placeholder="Buscar exercício da biblioteca...">
+              </div>
+              <div id="exercise-picker-results" class="picker-results"></div>
+            </div>
+
+            <!-- Lista de exercícios adicionados -->
+            <div id="workout-exercise-list-editor" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;"></div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeModal('modal-workout')">CANCELAR</button>
+            <button type="submit" class="btn-primary">
+              <i class="fa-solid fa-floppy-disk"></i> SALVAR TREINO
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: NOVO EXERCÍCIO (BIBLIOTECA)       -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-exercise">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="exercise-modal-title">Novo Exercício</h3>
+        <button onclick="closeModal('modal-exercise')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="exercise-form">
+          <div class="form-group">
+            <label for="ex-name">Nome do Exercício *</label>
+            <div class="input-wrapper">
+              <input type="text" id="ex-name" required placeholder="Ex: Supino Reto com Barra">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ex-group">Grupo Muscular</label>
+            <div class="input-wrapper">
+              <select id="ex-group">
+                <option value="">Selecionar grupo...</option>
+                <option value="Peito">Peito</option>
+                <option value="Costas">Costas</option>
+                <option value="Ombros">Ombros</option>
+                <option value="Bíceps">Bíceps</option>
+                <option value="Tríceps">Tríceps</option>
+                <option value="Pernas">Pernas</option>
+                <option value="Glúteos">Glúteos</option>
+                <option value="Abdômen">Abdômen</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Funcional">Funcional</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ex-desc">Descrição / Dica de Execução</label>
+            <div class="input-wrapper">
+              <textarea id="ex-desc" rows="2" placeholder="Manter cotovelos fixados ao tronco..."></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="ex-video">Link do Vídeo (YouTube / Vimeo)</label>
+            <div class="input-wrapper">
+              <i class="fa-brands fa-youtube input-icon" style="color:#FF0000;"></i>
+              <input type="url" id="ex-video" placeholder="https://youtube.com/watch?v=...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Upload de Vídeo Local (MP4)</label>
+            <div class="upload-zone" id="video-upload-zone" onclick="document.getElementById('ex-video-file').click()">
+              <i class="fa-solid fa-film"></i>
+              <span id="video-upload-label">Clique para selecionar um vídeo</span>
+              <small>Vídeo de qualquer formato · Máx 100MB</small>
+            </div>
+            <input type="file" id="ex-video-file" accept="video/*" style="display:none;">
+            <div id="video-upload-progress" style="display:none; margin-top:8px;">
+              <div class="upload-progress-bar">
+                <div class="upload-progress-fill" id="video-progress-fill"></div>
+              </div>
+              <p id="video-progress-text" style="font-size:12px; color:var(--text-grey); margin-top:4px;"></p>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn btn-danger" id="delete-exercise-btn" onclick="confirmDeleteExercise()" style="background: var(--error-red); color: white; border: none; font-weight: 700; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 13px; cursor: pointer; display: none;">
+              <i class="fa-solid fa-trash-can"></i> EXCLUIR EXERCÍCIO
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-secondary" onclick="closeModal('modal-exercise')">CANCELAR</button>
+              <button type="submit" class="btn-primary" id="save-exercise-btn">SALVAR EXERCÍCIO</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: CADASTRAR ALUNO                   -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-aluno">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cadastrar Aluno</h3>
+        <button onclick="closeModal('modal-aluno')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="aluno-form">
+          <div class="form-group">
+            <label for="aluno-name">Nome Completo *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user input-icon"></i>
+              <input type="text" id="aluno-name" required placeholder="João Silva">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="aluno-email">E-mail *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="aluno-email" required placeholder="aluno@email.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="aluno-phone">Telefone / WhatsApp</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-phone input-icon"></i>
+              <input type="tel" id="aluno-phone" placeholder="(47) 99999-9999">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="aluno-birthdate">Data de Nascimento</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar input-icon"></i>
+              <input type="date" id="aluno-birthdate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="aluno-password">Senha Inicial</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="aluno-password" placeholder="Mínimo 6 caracteres" minlength="6">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('aluno-password', this)" tabindex="-1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <small style="color:var(--text-grey); font-size:11px;">Deixe em branco para enviar convite por e-mail</small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeModal('modal-aluno')">CANCELAR</button>
+            <button type="submit" class="btn-primary" id="cadastrar-aluno-btn">
+              <i class="fa-solid fa-user-plus"></i> CADASTRAR
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: EDITAR ALUNO                      -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-edit-aluno">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Aluno</h3>
+        <button onclick="closeModal('modal-edit-aluno')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-aluno-form">
+          <input type="hidden" id="edit-aluno-id">
+          <div class="form-group">
+            <label for="edit-aluno-name">Nome Completo *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user input-icon"></i>
+              <input type="text" id="edit-aluno-name" required placeholder="João Silva">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-aluno-email">E-mail *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="edit-aluno-email" required placeholder="aluno@email.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-aluno-phone">Telefone / WhatsApp</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-phone input-icon"></i>
+              <input type="tel" id="edit-aluno-phone" placeholder="(47) 99999-9999">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-aluno-birthdate">Data de Nascimento</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-calendar input-icon"></i>
+              <input type="date" id="edit-aluno-birthdate">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-aluno-password">Nova Senha</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="edit-aluno-password" placeholder="Deixe em branco para não alterar" minlength="6">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('edit-aluno-password', this)" tabindex="-1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteAluno()" style="background: var(--error-red); color: white; border: none; font-weight: 700; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 13px; cursor: pointer;">
+              <i class="fa-solid fa-user-xmark"></i> EXCLUIR ALUNO
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-aluno')">CANCELAR</button>
+              <button type="submit" class="btn-primary" id="edit-aluno-btn">
+                <i class="fa-solid fa-floppy-disk"></i> SALVAR ALTERAÇÕES
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================= -->
+  <!-- MODAL: EDITAR COLABORADOR                -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-edit-user">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Colaborador</h3>
+        <button onclick="closeModal('modal-edit-user')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-user-form">
+          <input type="hidden" id="edit-user-id">
+          <div class="form-group">
+            <label for="edit-user-name">Nome Completo *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-tie input-icon"></i>
+              <input type="text" id="edit-user-name" required placeholder="Nome do Instrutor">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-user-email">E-mail *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="edit-user-email" required placeholder="instrutor@academia.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-user-password">Nova Senha</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="edit-user-password" placeholder="Deixe em branco para não alterar" minlength="6">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('edit-user-password', this)" tabindex="-1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="edit-user-role">Nível de Acesso *</label>
+            <div class="input-wrapper">
+              <select id="edit-user-role">
+                <option value="instrutor">Instrutor</option>
+                <option value="master">Master (Admin)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteUser()" style="background: var(--error-red); color: white; border: none; font-weight: 700; border-radius: var(--radius-sm); padding: 8px 16px; font-size: 13px; cursor: pointer;">
+              <i class="fa-solid fa-user-xmark"></i> EXCLUIR
+            </button>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-user')">CANCELAR</button>
+              <button type="submit" class="btn-primary" id="edit-user-btn">
+                <i class="fa-solid fa-floppy-disk"></i> SALVAR
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================= -->
+  <!-- MODAL: CADASTRAR COLABORADOR (INSTRUTOR) -->
+  <!-- ========================================= -->
+  <div class="modal-backdrop" id="modal-user">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cadastrar Colaborador</h3>
+        <button onclick="closeModal('modal-user')"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="user-form">
+          <div class="form-group">
+            <label for="user-name">Nome Completo *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user-tie input-icon"></i>
+              <input type="text" id="user-name" required placeholder="Nome do Instrutor">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-email">E-mail *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="user-email" required placeholder="instrutor@academia.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-password">Senha Inicial *</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-lock input-icon"></i>
+              <input type="password" id="user-password" required placeholder="Mínimo 6 caracteres" minlength="6">
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('user-password', this)" tabindex="-1">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="user-role">Nível de Acesso *</label>
+            <div class="input-wrapper">
+              <select id="user-role">
+                <option value="instrutor">Instrutor</option>
+                <option value="master">Master (Admin)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeModal('modal-user')">CANCELAR</button>
+            <button type="submit" class="btn-primary" id="cadastrar-user-btn">CADASTRAR</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Principal -->
+  <script src="app.js"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('SW registrado:', reg.scope))
+          .catch(err => console.warn('SW falhou:', err));
+      });
+    }
+  </script>
+</body>
+</html>

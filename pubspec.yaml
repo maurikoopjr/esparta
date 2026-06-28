@@ -1,0 +1,38 @@
+name: esparta
+description: "Aplicativo profissional de academia com suporte Android/iOS e sincronização offline com Supabase."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Backend & Auth
+  supabase_flutter: ^2.6.0
+
+  # Gerenciamento de Estado
+  provider: ^6.1.2
+
+  # Banco de Dados Local (Offline Cache)
+  sqflite: ^2.3.3+1
+  path: ^1.9.0
+
+  # Detecção de Conexão (Sincronização Offline)
+  connectivity_plus: ^6.0.3
+
+  # UI & Design
+  google_fonts: ^6.2.1
+  url_launcher: ^6.3.0
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
