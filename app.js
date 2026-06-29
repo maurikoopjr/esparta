@@ -1271,17 +1271,17 @@ function renderWorkoutEditorExercises() {
       <div class="ex-name-label" title="${item.nome}">${item.nome}</div>
       <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
         <input class="workout-ex-input" type="number" min="1" max="20" value="${item.series}"
-          onchange="updateWExParam(${idx},'series',this.value)" title="Séries">
+          oninput="updateWExParam(${idx},'series',this.value)" title="Séries">
         <span class="workout-ex-label">SÉR</span>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
         <input class="workout-ex-input wide" type="text" value="${item.repeticoes}"
-          onchange="updateWExParam(${idx},'repeticoes',this.value)" placeholder="12" title="Repetições">
+          oninput="updateWExParam(${idx},'repeticoes',this.value)" placeholder="12" title="Repetições">
         <span class="workout-ex-label">REP</span>
       </div>
       <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
         <input class="workout-ex-input wide" type="text" value="${item.carga || ''}"
-          onchange="updateWExParam(${idx},'carga',this.value)" placeholder="80kg" title="Carga">
+          oninput="updateWExParam(${idx},'carga',this.value)" placeholder="80kg" title="Carga">
         <span class="workout-ex-label">CARGA</span>
       </div>
       <button type="button" class="btn-icon danger" onclick="removeWEx(${idx})" title="Remover">
